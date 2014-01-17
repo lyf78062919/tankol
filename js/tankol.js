@@ -61,8 +61,7 @@ var TANKOL_STATE = {
         grass : 3,
         water : 4,
         ice : 5,
-        boss : 9,
-        die : 10,
+        boss : 9
     },
     TANKOL_TANK_TYPE = {
         player:1,
@@ -82,30 +81,30 @@ function GameSkin(){
     this._intro_img64 = "data:image/gif;base64,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";
     this._skin = new Image();
     this._skin.src = "img/skin.gif";
-    this.images = new Array();
+    this.position = new Array();
     with(this){
-        images["cursor"] = [128,96];
-        images["level"] = [396,96];
-        images["level_num"] = [256,96];
-        images["boss"] = [256,0];
-        images["map"] = [0,96];
-        images["player1"] = [0,0];
-        images["player2"] = [128,0];
-        images["tank1"] = [0,32];
-        images["tank2"] = [128,32];
-        images["tank3"] = [0,64];
-        images["tank4"] = [128,64];
-        images["tank5"] = [256,64];
-        images["anime"] = [256,32];
-        images["aureole"] = [160,96];  //光环
-        images["bullet"] = [80,96];
+        position["cursor"] = [128,96];
+        position["level"] = [396,96];
+        position["level_num"] = [256,96];
+        position["boss"] = [256,0];
+        position["map"] = [0,96];
+        position["player1"] = [0,0];
+        position["player2"] = [128,0];
+        position["tank1"] = [0,32];
+        position["tank2"] = [128,32];
+        position["tank3"] = [0,64];
+        position["tank4"] = [128,64];
+        position["tank5"] = [256,64];
+        position["anime_1"] = [256,32];
+        position["anime_2"] = [0,160];
+        position["aureole"] = [160,96];  //光环
+        position["bullet"] = [80,96];
+        position["bulletanime"] = [320,0]; //子弹动画
 
-        images["tankNum"] = [0,112];
-        images["hitFx"] = [320,0];
-        images["bombFx"] = [0,160];
-        images["food"] = [256,110];
-        images["score"] = [192,96];
-        images["gameOver"] = [384,64];
+        position["tankNum"] = [0,112];
+        position["food"] = [256,110];
+        position["score"] = [192,96];
+        position["gameOver"] = [384,64];
     }
 
     this.getintro_img = function(){
@@ -114,10 +113,10 @@ function GameSkin(){
 
     this.getImages = function(key){
         if(!key){
-            return this.images;
+            return this.position;
         }else{
-            if(this.images.hasOwnProperty(key)){
-                return this.images[key];
+            if(this.position.hasOwnProperty(key)){
+                return this.position[key];
             }else{
                 return null;
             }
@@ -315,27 +314,8 @@ GameState.prototype.gameInit = function()
         break
     }
 
-/*    player1 = null;
-    player2 = null;
-    tanks = [];
-    key = {};
-    
-    addTank(129,385,0,1);   
-    player1 = tanks[0];
-    
-    if(playerNum == 2)
-    {
-        addTank(256,385,0,2);   
-        player2 = tanks[1];
-    }
-    
-    for(var i = 0; i < playerNum; i ++)
-    {
-        tanks[i].live =firstLife;
-        tanks[i].score = 0;
-    }
-    level = 1;*/
     gameScene.init();
+    return;
 }
 
 //游戏级别切换 ===============================================================================
@@ -521,17 +501,19 @@ GameMap.prototype.draw = function(){
         cell_x   =  gameCfg.cell_x,
         cell_y   =  gameCfg.cell_y,
         img = gameSkin.getSkin();
-    
-    g.fillStyle = "#7f7f7f";
-    g.fillRect(0,0,width,height);
-    g.fillStyle = "#000";
-    g.fillRect(offerX,offerY,height-offerY*2,height-offerY*2);
+
+    var elm_bg = gameCanvas.getElm("background"),
+        g_bg  = elm_bg.getContext("2d");
+    g_bg.fillStyle = "#7f7f7f";
+    g_bg.fillRect(0,0,width,height);
+    g_bg.fillStyle = "#000";
+    g_bg.fillRect(offerX,offerY,height-offerY*2,height-offerY*2);
     
 
     //测试网格
     var test_img = new Image();
     test_img.src = "img/test.gif";
-    //g.drawImage(test_img,0,0);
+    //g_bg.drawImage(test_img,0,0);
     //return;
 
 
@@ -542,14 +524,14 @@ GameMap.prototype.draw = function(){
     var homey = gameSkin.getImages("boss")[1];
 
     /*       
-    non : 0,
-    wall : 1,
-    grid : 2,
-    grass : 3,
-    water : 4,
-    ice : 5,
-    boss : 9,
-    die : 10,*/
+        non : 0,
+        wall : 1,
+        grid : 2,
+        grass : 3,
+        water : 4,
+        ice : 5,
+        boss : 9
+    */
     //每一格为16*16
     for(var i=0;i<cell_x;i++)
     {
@@ -609,7 +591,7 @@ GameMap.prototype.draw = function(){
 
 
 function GameCanvas(){
-    this.canvas = ['scene','screen','actor','map','mask'];
+    this.canvas = ['scene','screen','actor','map','mask','background'];
     this.elm    = {};
     for (var i = 0; i < this.canvas.length; i++) { 
         var key = this.canvas[i],elm;
@@ -680,12 +662,13 @@ function GameM(){
         gameClear.clearCanvas("actor");
         this.drawTanks();
         this.drawBullets();
-        //this.drawBombs();
+        this.drawBulletAnimes();
     }
 
     this.update = function(){
         this.updateTanks();
         this.updateBullets();
+        this.updateBulletAnimes();
         this.updateControl();
     }
 }
@@ -693,10 +676,10 @@ function GameM(){
 GameM.prototype.drawTanks  = function(){
 
     var tanks = gameFactory.tanks;
-    for (var i = 0; i < tanks.length; i++) {    
+    for (var i = 0; i < tanks.length; i++) {
         if(tanks[i].anime && tanks[i].anime.state){
             tanks[i].anime.draw("actor"); 
-        }else{
+        }else if(tanks[i].life > 0 ){
             tanks[i].draw("actor"); 
         }
     };
@@ -707,36 +690,65 @@ GameM.prototype.drawBullets  = function(){
 
     var bullets = gameFactory.bullets;
     for (var i = 0; i < bullets.length; i++) {    
-        bullets[i].draw("actor"); 
+        if(bullets[i] && bullets[i].live > 0){
+            bullets[i].draw("actor");
+        }
     };
+}
 
-}  
+
+GameM.prototype.drawBulletAnimes  = function(){
+    var bulletanimes = gameFactory.bulletanimes;
+    for (var i = 0; i < bulletanimes.length; i++) {
+        bulletanimes[i].draw("actor");
+    };
+}
+
 
 
 GameM.prototype.updateTanks = function(){
-    
+
     var tanks = gameFactory.tanks;
-    for (var i = 0; i < tanks.length; i++) {    
-        if(tanks[i].anime){
+    for (var i = 0; i < tanks.length; i++) {
+
+        if(tanks[i].anime && tanks[i].anime.state){
             tanks[i].anime.update(); 
-        }else{
+        }else if( tanks[i].life > 0 ){
             tanks[i].update(); 
+        }else{
+            tanks.splice(i,1);
         }
     };
 
 }
 
+GameM.prototype.updateBulletAnimes  = function(){
+
+    var bulletanimes = gameFactory.bulletanimes;
+    for (var i = 0; i < bulletanimes.length; i++) {
+        bulletanimes[i].update("actor");
+    };
+}
+
+
+
+
 GameM.prototype.updateBullets  = function(){
     var bullets = gameFactory.bullets;
     for(var i = 0;i < bullets.length;i++)
     {
-        bullets[i].move();
+        if(bullets[i] && bullets[i].live > 0){
+            bullets[i].fly(i);
+        }else{
+            bullets.splice(i,1);
+        }
+
     }
 
 }  
 
 
-
+//操作相关控制项
 GameM.prototype.updateControl = function(){
     var players  = gameFactory.players,
         key_down  = gameState.key_down;
@@ -769,6 +781,7 @@ function GameFactory(){
     this.tanks      = new Array();
     this.tankAnimes = new Array();
     this.bullets     = new Array();
+    this.bulletanimes= new Array();
     this.bombs       = new Array();
 
     this.tank_battle =  new Array();
@@ -784,7 +797,7 @@ GameFactory.prototype.createTank    =  function(opts){
         this.players.push(tank);
     }else if(type === TANKOL_TANK_TYPE['computer']){
         tank = new ComputerTank(opts);
-        tank.anime = new TankAnime(opts.x,opts.y,"anime",32);
+        tank.anime = new TankAnime_1(opts.x,opts.y,"anime_1",32);
         //this.tankAnimes.push(tankAnime);
     }else if(type === TANKOL_TANK_TYPE['remote']){
 
@@ -803,6 +816,7 @@ GameFactory.prototype.createBullet    =  function(opts){
     if(bullet){
          this.bullets.push(bullet);   
      }
+     //debugger;
      return;
 }
 
@@ -833,12 +847,53 @@ function GameObj(x,y,skin,size){
     this.size = size;
 }
 
+//碰撞检测
+GameObj.prototype.impactTest = function(obj){
+    var min1 = this.x > obj.x ? this.x :obj.x;
+    var max1 = this.x + this.size < obj.x + obj.size ? this.x + this.size : obj.x + obj.size;
+    var min2 = this.y > obj.y ? this.y : obj.y;
+    var max2 = this.y + this.size < obj.y + obj.size ? this.y + this.size : obj.y + obj.size;
+    if (min1 <= max1 && min2 <= max2) return true; else return false;
+}
+
+//子弹动画对象基类 ==================================================================================
+
+function BulletAnime(x, y, skin, size){
+    GameObj.call(this, x, y, skin, size);
+    this.x = this.x - this.size/2;
+    this.y = this.y - this.size/2;
+    this.step = 0;
+    this.time =  -3;
+    this.state = 1;
+}
+
+BulletAnime.prototype = new GameObj();
+
+
+BulletAnime.prototype.draw = function(id){
+    var elm = gameCanvas.getElm(id),
+        g   = elm.getContext("2d"),
+        img = gameSkin.getSkin(),
+        offerX = gameCfg.padding_x,
+        offerY = gameCfg.padding_y,
+        images = gameSkin.getImages(this.skin);
+    g.drawImage(img,this.step * 32 + images[0], images[1], 32, 32, this.x + offerX, this.y + offerY, this.size, this.size) ;
+    return;
+};
+
+BulletAnime.prototype.update = function(){
+    if(this.time % 4 == 1) {this.step++;}
+    if(this.step > 3) {return;}
+    this.time ++;
+};
 
 
 
-//tank对象基类 ==================================================================================
+
+
+//tank动画对象基类 ==================================================================================
 function TankAnime(x, y, skin, size){   
-    GameObj.call(this, x, y, skin, 32);
+    GameObj.call(this, x, y, skin, size);
     this.step = 0;
     this.time =  0;
     this.state = 1;
@@ -846,7 +901,17 @@ function TankAnime(x, y, skin, size){
 
 TankAnime.prototype = new GameObj();
 
-TankAnime.prototype.draw = function(id){
+
+//诞生
+function TankAnime_1(x, y, skin, size){
+    TankAnime.call(this, x, y, skin, size);
+    this.step = 0;
+    this.time =  0;
+    this.state = 1;
+}
+TankAnime_1.prototype = new TankAnime();
+
+TankAnime_1.prototype.draw = function(id){
     var elm = gameCanvas.getElm(id),
         g   = elm.getContext("2d"),
         img = gameSkin.getSkin(),
@@ -858,7 +923,7 @@ TankAnime.prototype.draw = function(id){
 };
 
 
-TankAnime.prototype.update = function(){
+TankAnime_1.prototype.update = function(){
     if(this.time >= 35){
         this.state = 0;
     }
@@ -869,6 +934,50 @@ TankAnime.prototype.update = function(){
     }
     this.time++;
 };
+
+
+//毁灭
+function TankAnime_2(x, y, skin, size){
+    TankAnime.call(this, x, y, skin, size);
+    this.x = x - 16;
+    this.y = y - 16;
+    this.step = 0;
+    this.time =  -10;
+    this.state = 1;
+}
+TankAnime_2.prototype = new TankAnime();
+TankAnime_2.prototype.draw = function(id){
+    var elm = gameCanvas.getElm(id),
+        g   = elm.getContext("2d"),
+        img = gameSkin.getSkin(),
+        offerX = gameCfg.padding_x,
+        offerY = gameCfg.padding_y,
+        images = gameSkin.getImages(this.skin);
+    g.drawImage(img, this.size * this.step + images[0], images[1], this.size, this.size, this.x + offerX,this.y + offerY,this.size,this.size) ;
+    return;
+};
+
+
+TankAnime_2.prototype.update = function(){
+    if(this.time % 7 == 1)
+    {
+        this.step++;
+    }
+    if(this.step > 4)
+    {
+        this.state = 0;
+        return;
+    }
+    this.time ++;
+};
+
+
+
+
+
+
+
+
 //子弹对象基类 ==================================================================================
 
 function Bullet(opts){
@@ -878,14 +987,15 @@ function Bullet(opts){
         size = ( opts && typeof(opts['size'])!=='undefined')? opts.size:6;
         GameObj.call(this, x, y, skin, size); 
 
-    this.type = 0;
-    this.speed = 6;
+    this.power = 0;
+    this.speed = 5;
     this.direct = 0;
     this.fid = 0;
+    this.live = 1;
     //参数合并
     if(opts){
         for(var i in opts){
-        if(this.hasOwnProperty(i)) this[i] = opts[i];
+            if(this.hasOwnProperty(i)) this[i] = opts[i];
         }
     }
 
@@ -910,12 +1020,12 @@ Bullet.prototype.directCorrective = function(){
             
         case TANKOL_TANK_DIRECT.left:
                 this.y += 13;
-                this.x += 32;
+                this.x -= 3;
                 break;
             
         case TANKOL_TANK_DIRECT.right:
                 this.y += 13;
-                this.x -= 3;
+                this.x += 32;
                 break;       
     }
     return;
@@ -932,7 +1042,36 @@ Bullet.prototype.draw = function(id){
     g.drawImage(img, 6 * this.direct + images[0], images[1], this.size, this.size, this.x + offerX, this.y + offerY, this.size, this.size);
 }
 
-Bullet.prototype.move = function(){
+//让子弹飞
+Bullet.prototype.fly = function(index){
+    this.move(index);
+    this.flyAway(index);
+    this.hitBuilding(index);
+    this.hitTank(index);
+    //this.hitBullet(index);
+    return;
+}
+
+
+//子弹飞出去了
+Bullet.prototype.flyAway = function(index){
+    var cell_size = gameCfg.cell_size,
+        cell_x    = gameCfg.cell_x,
+        cell_y    = gameCfg.cell_y;
+    if(this.x < 0 || this.y < 0 || this.x > cell_size*cell_x || this.y > cell_size*cell_y){
+        if(this.x > cell_size*cell_x){
+            this.x = this.x - this.speed;
+        }else if(this.y > cell_size*cell_y){
+            this.y = this.y - this.speed;
+        }
+        this.disappear(index);
+    }
+    return;
+}
+
+
+
+Bullet.prototype.move = function(index){
 
     switch(this.direct){
         case TANKOL_TANK_DIRECT.up:
@@ -952,6 +1091,157 @@ Bullet.prototype.move = function(){
 }
 
 
+
+Bullet.prototype.destroyBuilding = function(x,y,new_map){
+    var elm = gameCanvas.getElm("map"),
+        g = elm.getContext("2d"),
+        cell_size = gameCfg.cell_size,
+        offerX = gameCfg.padding_x,
+        offerY = gameCfg.padding_y,
+        x = x * cell_size,
+        y = y * cell_size;
+    g.fillStyle = "#000000";
+    switch(new_map){
+        case  0 :g.clearRect(x + offerX, y + offerY,16,16);
+            break;
+        case 10 :g.clearRect(x + offerX,y + offerY + cell_size/2,cell_size,cell_size/2);
+            break;
+        case 11 :g.clearRect(x + offerX,y + offerY,cell_size,cell_size/2);
+            break;
+        case 12 :g.clearRect(x + offerX + cell_size/2,y + offerY,cell_size/2,cell_size);
+            break;
+        case 13 :g.clearRect(x + offerX,y + offerY,cell_size/2,cell_size);
+            break;
+    }
+    return;
+}
+
+
+Bullet.prototype.hitTank = function(index){
+    var tanks = gameFactory.tanks;
+    //console.info("打坦克");
+    var hited = false;
+    for(var i = 0;i < tanks.length;i ++ )
+    {
+        var x = tanks[i].x;
+        var y = tanks[i].y;
+
+        if( tanks[i].life > 0 && this.impactTest(tanks[i])){
+            hited = true;
+            console.info("打到坦克",i,tanks[i].x,tanks[i].y,"子弹:",index,this.x,this.y);
+
+            tanks[i].life --;
+
+            if(tanks[i].life <= 0)
+            {
+                //console.info("坦克死了");
+                tanks[i].anime = new TankAnime_2(tanks[i].x,tanks[i].y,"anime_2",66);
+                //tanks.splice(i,1);
+                //i --;
+            }
+
+
+
+            if(hited){
+                this.disappear(index);
+                break;
+            }
+
+            return;
+        }
+    }
+
+    return;
+};
+
+
+
+
+Bullet.prototype.disappear = function(index){
+    var bullets   =  gameFactory.bullets,
+        bulletsanimes = gameFactory.bulletanimes;
+    //bullets.splice(index,1);
+    //console.info(bullets[index],index);
+    bullets[index].live = 0;
+    var anime = new BulletAnime(this.x+3,this.y+3,"bulletanime",20);
+    bulletsanimes.push(anime);
+    return;
+}
+
+
+Bullet.prototype.hitBuilding = function(index){
+    var map = gameState.gameLevel.getCurrentMap(),
+        cell_x    =  gameCfg.cell_x-1,
+        cell_y    =  gameCfg.cell_y-1,
+        cell_size =  gameCfg.cell_size,
+        x_l_m_r = [ parseInt((this.x - 4)/ cell_size), parseInt((this.x + this.size/2) / cell_size), parseInt((this.x + this.size+4) / cell_size)],
+        y_t_m_b = [ parseInt((this.y - 4) / cell_size), parseInt((this.y + this.size/2) / cell_size), parseInt((this.y + this.size+4) / cell_size)],
+        checkPosition_x,
+        checkPosition_y,
+        hited = false;
+
+    x_l_m_r[2] = (x_l_m_r[2] > cell_x)?cell_x:x_l_m_r[2];
+    y_t_m_b[2] = (y_t_m_b[2] > cell_y)?cell_y:y_t_m_b[2];
+    x_l_m_r[1] = (x_l_m_r[1] > cell_x)?cell_x:x_l_m_r[1];
+    y_t_m_b[1] = (y_t_m_b[1] > cell_y)?cell_y:y_t_m_b[1];
+    x_l_m_r[0] = (x_l_m_r[0] > 0 )?x_l_m_r[0]:0;
+    y_t_m_b[0] = (y_t_m_b[0] > 0 )?y_t_m_b[0]:0;
+
+    for(var i = 0; i < 2; i++ ){
+        if(this.direct == TANKOL_TANK_DIRECT.up || this.direct == TANKOL_TANK_DIRECT.down ){
+            checkPosition_x = x_l_m_r[i];
+            checkPosition_y = y_t_m_b[1];
+        }else{
+            checkPosition_x = x_l_m_r[1];
+            checkPosition_y = y_t_m_b[i];
+        }
+
+        var checkPosition  = parseInt(map[checkPosition_y][checkPosition_x]);
+
+        if( checkPosition == TANKOL_MAP.wall || checkPosition == TANKOL_MAP.grid || checkPosition > TANKOL_MAP.boss ){
+
+            hited = true;
+
+            if(checkPosition  ==  TANKOL_MAP.wall){
+                var new_map = 10 + parseInt(this.direct);
+                this.destroyBuilding(checkPosition_x,checkPosition_y,new_map);
+                map[checkPosition_y][checkPosition_x] = new_map;
+                console.info("击中",new_map);
+            }else if(checkPosition == TANKOL_MAP.grid && this.power == 0){
+                 //打了没有反应
+                //console.info("打不动");
+            }else if(checkPosition > TANKOL_MAP.boss){
+                //console.info("打过了");
+                map[checkPosition_y][checkPosition_x] = TANKOL_MAP.non;
+                this.destroyBuilding(checkPosition_x,checkPosition_y,0);
+                switch(checkPosition)
+                {
+                    case 10 :this.y -= 4;
+                        break;
+                    case 11 :this.y += 4;
+                        break;
+                    case 12 :this.x -= 4;
+                        break;
+                    case 13 :this.x += 4;
+                        break;
+                }
+            }
+            //debugger;
+        }
+
+    }
+
+    if(hited){
+        this.disappear(index);
+    }
+
+
+
+    return;
+}
+
+
+
 //tank对象基类 ==================================================================================
 
 function TankBase(opts){
@@ -964,12 +1254,12 @@ function TankBase(opts){
     this.name = "";
     this.direct = TANKOL_TANK_DIRECT['down'];
     this.l_direct = TANKOL_TANK_DIRECT['down'];
-    this.speed = 1;
+    this.speed = 4;
     this.type = 0;
     this.fired = false;
-    this.time = 0;
-    this.fire_speed = 70;
-    this.life = 1;
+    this.fire_interval = 10;
+    this.fire_time = 0;
+    this.life = 10;
     this.live = 1;
     this.anime = null;
 
@@ -992,13 +1282,19 @@ TankBase.prototype.draw = function(id){
         offerY = gameCfg.padding_y,
         xx = images[0],
         yy = images[1];
-        g.drawImage(img,32 * this.direct + xx, yy, 32, 32,this.x + offerX,this.y + offerY,32,32);  
+        g.drawImage(img,32 * this.direct + xx, yy, 32, 32,this.x + offerX,this.y + offerY,32,32);
     return;
 };
 
 
 TankBase.prototype.update = function(id){
 
+    if(this.fired && this.fire_time < this.fire_interval){
+        this.fire_time ++;
+    }else{
+        this.fired = false;
+        this.fire_time = 0;
+    }
 };
 
 TankBase.prototype.changeDirect = function(){
@@ -1092,8 +1388,8 @@ TankBase.prototype.checkMove = function(direct){
                 dist_y   = dist_y<0?0:dist_y;
             if(this.y - this.speed > -1 && this.checkMap(dist_x_l,dist_y) && this.checkMap(dist_x_m,dist_y) && this.checkMap(dist_x_r,dist_y))
             {
-                //return !this.checkHit(tanks);
-                return true;
+
+                return !this.hitTank();
             }
 
             break;
@@ -1108,8 +1404,7 @@ TankBase.prototype.checkMove = function(direct){
             
             if(this.y + this.speed + this.size < cell_size*cell_y && this.checkMap(dist_x_l,dist_y) && this.checkMap(dist_x_m,dist_y) && this.checkMap(dist_x_r,dist_y))
             {
-                //return !this.checkHit(tanks);
-                return true;
+                return !this.hitTank();
             }
 
             break;
@@ -1122,11 +1417,10 @@ TankBase.prototype.checkMove = function(direct){
                 dist_y_m = parseInt( (this.y + this.size) /cell_size),
                 dist_y_b = parseInt( (this.y +(this.size/2) )/cell_size),
                 dist_x   = dist_x<0?0:dist_x;
-            
+
             if(this.x - this.speed > -1 && this.checkMap(dist_x,dist_y_t) && this.checkMap(dist_x,dist_y_m) && this.checkMap(dist_x,dist_y_b))
             {
-                //return !this.checkHit(tanks);
-                return true;
+                return !this.hitTank();
             }
             break;
         }
@@ -1139,8 +1433,7 @@ TankBase.prototype.checkMove = function(direct){
             
             if(this.x + this.speed + this.size < cell_size*cell_x && this.checkMap(dist_x,dist_y_t) && this.checkMap(dist_x,dist_y_m) && this.checkMap(dist_x,dist_y_b))
             {
-                //return !this.checkHit(tanks);
-                return true;
+                return !this.hitTank();
             }
             break;
         }
@@ -1148,6 +1441,21 @@ TankBase.prototype.checkMove = function(direct){
         default:break;
     }
     //console.info("走不动了" ,this.x,this.y);
+    return false;
+}
+
+
+TankBase.prototype.hitTank = function(){
+    var tanks = gameFactory.tanks;
+    for(var i in tanks){
+        if(tanks[i] === this){
+            continue;
+        }else{
+
+
+
+        }
+    }
     return false;
 }
 
@@ -1174,7 +1482,7 @@ TankBase.prototype.fire = function(){
     if(!this.fired)
     {   
         this.fired = true;
-        gameFactory.createBullet({x:this.x,y:this.y,type:this.type,direct:this.direct,fid:this.id});
+            gameFactory.createBullet({x:this.x,y:this.y,type:this.type,direct:this.direct,fid:this.id});
     }
 };
 
@@ -1246,7 +1554,6 @@ function refresh(){
     console.info(now_state);
     switch (now_state){
         case TANKOL_STATE.playing:
-
             gameM.draw();
             gameM.update();
 
