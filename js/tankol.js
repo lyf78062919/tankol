@@ -52,7 +52,7 @@ var TANKOL_STATE = {
         k_w : 87,
         k_x : 88,
         k_y : 89,
-        k_z : 90,
+        k_z : 90
     },
     TANKOL_MAP = {
         non : 0,
@@ -354,7 +354,7 @@ GameState.prototype.gameInit = function()
             [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,1,1,0,0],
             [0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,1,1,0,0,1,1,0,0],
             [0,0,1,1,0,0,1,1,0,0,0,1,9,8,1,0,0,0,1,1,1,1,1,1,0,0],
-            [0,0,1,1,0,0,1,1,0,0,0,1,8,8,1,0,0,0,1,1,1,1,1,1,0,0],
+            [0,0,1,1,0,0,1,1,0,0,0,1,8,8,1,0,0,0,1,1,1,1,1,1,0,0]
         ]
     ];
  }   
@@ -662,13 +662,11 @@ function GameM(){
         gameClear.clearCanvas("actor");
         this.drawTanks();
         this.drawBullets();
-        this.drawBulletAnimes();
     }
 
     this.update = function(){
         this.updateTanks();
         this.updateBullets();
-        this.updateBulletAnimes();
         this.updateControl();
     }
 }
@@ -689,18 +687,12 @@ GameM.prototype.drawTanks  = function(){
 GameM.prototype.drawBullets  = function(){
 
     var bullets = gameFactory.bullets;
-    for (var i = 0; i < bullets.length; i++) {    
-        if(bullets[i] && bullets[i].live > 0){
+    for (var i = 0; i < bullets.length; i++) {
+        if(bullets[i].anime && bullets[i].anime.state){
+            bullets[i].anime.draw("actor");
+        }else if(bullets[i].live > 0){
             bullets[i].draw("actor");
         }
-    };
-}
-
-
-GameM.prototype.drawBulletAnimes  = function(){
-    var bulletanimes = gameFactory.bulletanimes;
-    for (var i = 0; i < bulletanimes.length; i++) {
-        bulletanimes[i].draw("actor");
     };
 }
 
@@ -722,22 +714,14 @@ GameM.prototype.updateTanks = function(){
 
 }
 
-GameM.prototype.updateBulletAnimes  = function(){
-
-    var bulletanimes = gameFactory.bulletanimes;
-    for (var i = 0; i < bulletanimes.length; i++) {
-        bulletanimes[i].update("actor");
-    };
-}
-
-
-
 
 GameM.prototype.updateBullets  = function(){
     var bullets = gameFactory.bullets;
     for(var i = 0;i < bullets.length;i++)
     {
-        if(bullets[i] && bullets[i].live > 0){
+        if(bullets[i].anime && bullets[i].anime.state){
+            bullets[i].anime.update();
+        }else if(bullets[i].live > 0){
             bullets[i].fly(i);
         }else{
             bullets.splice(i,1);
@@ -883,7 +867,7 @@ BulletAnime.prototype.draw = function(id){
 
 BulletAnime.prototype.update = function(){
     if(this.time % 4 == 1) {this.step++;}
-    if(this.step > 3) {return;}
+    if(this.step > 3) {this.state = 0; return;}
     this.time ++;
 };
 
@@ -992,6 +976,7 @@ function Bullet(opts){
     this.direct = 0;
     this.fid = 0;
     this.live = 1;
+    this.anime = null;
     //参数合并
     if(opts){
         for(var i in opts){
@@ -1164,7 +1149,8 @@ Bullet.prototype.disappear = function(index){
     //console.info(bullets[index],index);
     bullets[index].live = 0;
     var anime = new BulletAnime(this.x+3,this.y+3,"bulletanime",20);
-    bulletsanimes.push(anime);
+    bullets[index].anime = anime;
+    //bulletsanimes.push(anime);
     return;
 }
 
@@ -1451,12 +1437,85 @@ TankBase.prototype.hitTank = function(){
         if(tanks[i] === this){
             continue;
         }else{
+            var that    = tanks[i];
+            var this_xy = this.getLastXY(this);
+            var that_xy = this.getLastXY(that);
 
 
+            var min1 = this_xy[0] > that_xy[0] ? this_xy[0] : that_xy[0];
+            var max1 = this_xy[0] + this.size < that_xy[0] + that.size ? this_xy[0] + this.size : that_xy[0] + that.size;
+            var min2 = this_xy[1] > that_xy[1] ? this_xy[1] : that_xy[1];
+            var max2 = this_xy[1] + this.size < that_xy[1] + that.size ? this_xy[1] + this.size : that_xy[1] + that.size;
+            if (min1 <= max1 && min2 <= max2){
+                var hited = true;
+
+                if(hited){
+                    switch(this.direct){
+                        case TANKOL_TANK_DIRECT.up:
+                        {
+                            xy = [x,y-speed];
+                            break;
+                        }
+                        case TANKOL_TANK_DIRECT.down:
+                        {
+                            xy = [x,y+speed];
+                            break;
+                        }
+                        case TANKOL_TANK_DIRECT.left:
+                        {
+                            xy = [x-speed,y];
+                            break;
+                        }
+                        case TANKOL_TANK_DIRECT.right:
+                        {
+                            xy = [x+speed,y];
+                            break;
+                        }
+                        default:break;
+                    }
+                }
+
+                return hited;
+            }
 
         }
     }
     return false;
+}
+
+TankBase.prototype.getLastXY = function(obj){
+    var direct = obj.direct,
+        x = obj.x,
+        y = obj.y,
+        speed = obj.speed,
+        xy = new Array();
+
+    switch(direct){
+        case TANKOL_TANK_DIRECT.up:
+        {
+            xy = [x,y-speed];
+            break;
+        }
+        case TANKOL_TANK_DIRECT.down:
+        {
+            xy = [x,y+speed];
+            break;
+        }
+        case TANKOL_TANK_DIRECT.left:
+        {
+            xy = [x-speed,y];
+            break;
+        }
+        case TANKOL_TANK_DIRECT.right:
+        {
+            xy = [x+speed,y];
+            break;
+        }
+        default:break;
+    }
+
+    return xy;
+
 }
 
 
