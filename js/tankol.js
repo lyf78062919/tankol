@@ -309,7 +309,10 @@ GameState.prototype.gameInit = function()
 
         break;
 
+        //网络模式
         case 2:
+            wcInit();
+
 
         break
     }
@@ -407,8 +410,7 @@ GameLevel.prototype.draw = function(id, x, y, num, type){
 
 
 //场景切换 ===============================================================================
-function GameScene()
-{
+function GameScene(){
     this._time = 0;
     this._temp = 0;
     this._px_per_time = 0;
@@ -424,7 +426,7 @@ function GameScene()
 
 GameScene.prototype.init = function(){
     //通过设定move时间计算相关参数
-    var move_time = 200,              //过场总计400毫秒 
+    var move_time = 200,              //过场总计400毫秒
         standing_time = 100,           //停留1000毫秒
         frame_rate = gameCfg.refresh_rate,
         move_times = move_time/frame_rate,
@@ -630,7 +632,7 @@ GameClear.prototype.clearCanvas = function(id){
 function GameCfg(){
     this.width  = 512;
     this.height = 448;
-    this.refresh_rate = 20;
+    this.refresh_rate = 40;
     this.padding_x = 32;
     this.padding_y = 16;
     this.cell_size = 16;
@@ -668,6 +670,7 @@ function GameM(){
         this.updateTanks();
         this.updateBullets();
         this.updateControl();
+        this.updateWs();
     }
 }
 
@@ -690,9 +693,13 @@ GameM.prototype.drawBullets  = function(){
     for (var i = 0; i < bullets.length; i++) {
         if(bullets[i].anime && bullets[i].anime.state){
             bullets[i].anime.draw("actor");
-        }else if(bullets[i].live > 0){
+        }else{
             bullets[i].draw("actor");
         }
+
+/*        else if(bullets[i].live > 0){
+            bullets[i].draw("actor");
+        }*/
     };
 }
 
@@ -758,18 +765,40 @@ GameM.prototype.updateControl = function(){
 
 
 
+//网络更新
+GameM.prototype.updateWs = function(){
+    var game_mode = gameState.getGameMode();
+    if(game_mode == 2){
+/*        key_down  = gameState.key_down;
+        var keys = {};
+        for(i in key_down){
+            if(key_down[i] === null ){
+                continue;
+            }else if(key_down[i] == false || key_down[i] == 0){
+                keys[i] = 0;
+            }else if(key_down[i] == true || key_down[i] == 1){
+                keys[i] = 1;
+            }
+        }
+        wsSend({code:20,wsid:WSID,keys:keys}); //更新*/
+        wsSend({code:10,wsid:WSID}); //获取
+    }else{
+        return;
+    }
+}
+
+
+
 
 //工厂类 ==================================================================================
 function GameFactory(){
     this.players    = new Array();
     this.tanks      = new Array();
-    this.tankAnimes = new Array();
     this.bullets     = new Array();
-    this.bulletanimes= new Array();
-    this.bombs       = new Array();
-
     this.tank_battle =  new Array();
 }
+
+
 
 //tank 专用工厂
 GameFactory.prototype.createTank    =  function(opts){
@@ -1033,7 +1062,7 @@ Bullet.prototype.fly = function(index){
     this.flyAway(index);
     this.hitBuilding(index);
     this.hitTank(index);
-    //this.hitBullet(index);
+    this.hitBullet(index);
     return;
 }
 
@@ -1137,8 +1166,22 @@ Bullet.prototype.hitTank = function(index){
     }
 
     return;
-};
+}
 
+Bullet.prototype.hitBullet = function(index){
+    var bullets = gameFactory.bullets;
+
+    for(var i = 0;i<bullets.length;i++){
+        if(index == i){
+            continue;
+        }else{
+            if(this.impactTest(bullets[i])){
+                this.live = 0;
+                bullets[i].live = 0;
+            }
+        }
+    }
+}
 
 
 
@@ -1196,6 +1239,10 @@ Bullet.prototype.hitBuilding = function(index){
             }else if(checkPosition == TANKOL_MAP.grid && this.power == 0){
                  //打了没有反应
                 //console.info("打不动");
+            }else if(checkPosition == TANKOL_MAP.boss){
+                    g.drawImage(img,0 + homex, homey, cell_size*2, cell_size*2, j*cell_size + offerX, i*cell_size + offerY, cell_size*2, cell_size*2) ;
+                    gameState.setState(TANKOL_STATE.over);
+                    return true;
             }else if(checkPosition > TANKOL_MAP.boss){
                 //console.info("打过了");
                 map[checkPosition_y][checkPosition_x] = TANKOL_MAP.non;
@@ -1430,7 +1477,7 @@ TankBase.prototype.checkMove = function(direct){
     return false;
 }
 
-
+//TODO:碰撞检测待优化
 TankBase.prototype.hitTank = function(){
     var tanks = gameFactory.tanks;
     for(var i in tanks){
@@ -1446,36 +1493,41 @@ TankBase.prototype.hitTank = function(){
             var max1 = this_xy[0] + this.size < that_xy[0] + that.size ? this_xy[0] + this.size : that_xy[0] + that.size;
             var min2 = this_xy[1] > that_xy[1] ? this_xy[1] : that_xy[1];
             var max2 = this_xy[1] + this.size < that_xy[1] + that.size ? this_xy[1] + this.size : that_xy[1] + that.size;
-            if (min1 <= max1 && min2 <= max2){
-                var hited = true;
 
-                if(hited){
-                    switch(this.direct){
-                        case TANKOL_TANK_DIRECT.up:
-                        {
-                            xy = [x,y-speed];
-                            break;
+            if (min1 < max1 && min2 < max2){
+                console.info("撞",that.x,this.x,that.y,this.y);
+                var check = 27;
+                switch(this.direct){
+                    case TANKOL_TANK_DIRECT.up:
+                    {
+                        if ( that.y  + check < this.y ){
+                            return true;
                         }
-                        case TANKOL_TANK_DIRECT.down:
-                        {
-                            xy = [x,y+speed];
-                            break;
-                        }
-                        case TANKOL_TANK_DIRECT.left:
-                        {
-                            xy = [x-speed,y];
-                            break;
-                        }
-                        case TANKOL_TANK_DIRECT.right:
-                        {
-                            xy = [x+speed,y];
-                            break;
-                        }
-                        default:break;
+                        break;
                     }
+                    case TANKOL_TANK_DIRECT.down:
+                    {
+                        if ( that.y  > this.y + check ){
+                            return true;
+                        }
+                        break;
+                    }
+                    case TANKOL_TANK_DIRECT.left:
+                    {
+                        if ( that.x + check < this.x ){
+                            return true;
+                        }
+                        break;
+                    }
+                    case TANKOL_TANK_DIRECT.right:
+                    {
+                        if ( that.x  > this.x + check ){
+                            return true;
+                        }
+                        break;
+                    }
+                    default:break;
                 }
-
-                return hited;
             }
 
         }
@@ -1487,7 +1539,8 @@ TankBase.prototype.getLastXY = function(obj){
     var direct = obj.direct,
         x = obj.x,
         y = obj.y,
-        speed = obj.speed,
+        //speed = obj.speed,
+        speed = 0,
         xy = new Array();
 
     switch(direct){
@@ -1615,7 +1668,6 @@ function refresh(){
         case TANKOL_STATE.playing:
             gameM.draw();
             gameM.update();
-
         break;
         
         case TANKOL_STATE.init:
@@ -1659,13 +1711,181 @@ function runtime(){
     TANKOL_TIMER = setInterval(refresh,gameCfg.refresh_rate);
 }
 
+//websocket
+
+function wcInit(){
+    window.WebSocket = window.WebSocket || window.MozWebSocket;
+    if (!window.WebSocket){
+        alert("你的浏览器太老土了，赶紧更新吧！");
+        return;
+    }
+    websocket = new WebSocket("ws://192.168.10.100:8484");
+    websocket.onopen = wsOpen;
+    websocket.onclose = wsClose;
+    websocket.onmessage = wsMessage;
+    websocket.onerror = wsError;
+    return;
+}
+
+
+//ws 交互代码
+/*
+
+清除用户列表： 555
+获取用户列表： 100
+更新用户列表： 101
+
+发送按下键:12
+发送松开键:21
+
+ */
+
+function wsClearAll(){
+    wsSend({code:555});
+}
+
+
+function wsSend(data){
+    var str = jsonToString(data);
+    websocket.send(str);
+    return;
+}
+
+
+function wsOpen(evt) {
+    var json = {code:100};
+    wsSend(json);
+    console.log("服务器连接成功！");
+    return;
+}
+
+
+
+function wsClose(evt) {
+    console.log("链接中断！");
+    return;
+}
+
+
+
+function wsMessage(evt){
+    var data = evt.data;
+    if(!data){
+        return;
+    }
+    data = stringToJson(data);
+    if(!data){
+        return;
+    }else{
+        switch( data['code'] ){
+            case 100 :
+            {
+                var users = data['data'];
+                var opts = {};
+
+                if(users.length == 0){
+                    window.WSID = 1;
+
+                }else if(users.length == 1){
+                    window.WSID = 2;
+                }else{
+                    cosnole.info("房间已满！");
+                    return;
+                }
+
+                opts = {
+                    x    : 129,
+                    y    : 385,
+                    name : "player1",
+                    type : TANKOL_TANK_TYPE['player'],
+                    model:'1'
+                };
+                gameFactory.createTank(opts);
+
+                opts = {
+                    x    : 256,
+                    y    : 385,
+                    name : "player2",
+                    type : TANKOL_TANK_TYPE['player'],
+                    model:'2'
+                };
+                gameFactory.createTank(opts);
+
+
+                wsSend({code:101,user:"player"+WSID });
+            }
+            break;
+            case 10 :
+            {
+                var keys = data['keys'];
+                var player = "player";
+                key_down  = gameState.key_down;
+                console.info(keys);
+                if(WSID == 1){
+                    player = player + "2";
+                }else{
+                    player = player + "1";
+                }
+                if(!keys){
+                    return;
+                }else{
+                    for(var i in keys ){
+                        key_down[i] = keys[i];
+                    }
+                }
+
+
+
+
+            }
+                break;
+
+
+        }
+
+
+
+
+    }
+}
+
+
+function wsError(evt){
+    console.info('Error occured: ' + evt.data);
+    return;
+}
+
+
+function jsonToString(json){
+    return JSON.stringify(json);
+}
+
+function stringToJson(str){
+    try{
+        str = str.replace(/\'/g, "\"");
+        str = str.replace(/u/g, "");
+        return JSON.parse(str);
+    }catch(error){
+        console.log(error,str);
+    }
+}
+
+
+//键盘事件捕获
 document.onkeydown = function(e){
         var now_state = gameState.getState();
         var key_down  = gameState.key_down;
         var cursor_index = gameCursor.getNum();
-
+        var game_mode = gameState.getGameMode();
         var key_code = e.keyCode;
         e.preventDefault();
+
+
+        //网络 发送
+        if(game_mode == 2 && key_down[key_code] !== true ){
+            wsSend({code:12,wsid:WSID,key:key_code});
+        }
+
         key_down[key_code] = true;
 
         switch (now_state){
@@ -1686,8 +1906,9 @@ document.onkeydown = function(e){
                 else if(key_code == TANKOL_KEY['k_down']){ gameCursor.next(1); }
 
                 if( key_code == TANKOL_KEY['k_space'] || key_code == TANKOL_KEY['k_enter']){
-                    if( cursor_index == 0) {      }
-                    else if( cursor_index == 1) {    }
+                    if( cursor_index == 0) {       }
+                    else if( cursor_index == 1) {     }
+                    else if( cursor_index == 2) {     }
                     else {return;}
                     gameState.setState("init");
                     gameCursor.destroy();
@@ -1708,7 +1929,12 @@ document.onkeydown = function(e){
 document.onkeyup = function(e){
     var key_down  = gameState.key_down;
     var key_code = e.keyCode;
+    var game_mode = gameState.getGameMode();
+    if(game_mode == 2 && key_down[key_code] !== false){
+        wsSend({code:21,wsid:WSID,key:key_code});
+    }
     key_down[key_code] = false;
+    return;
 }
 
 window.onload = runtime;
