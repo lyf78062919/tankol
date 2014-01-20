@@ -61,7 +61,7 @@ var TANKOL_STATE = {
         grass : 3,
         water : 4,
         ice : 5,
-        boss : 9
+        boss : 6
     },
     TANKOL_TANK_TYPE = {
         player:1,
@@ -329,43 +329,27 @@ GameState.prototype.gameInit = function()
             [1,1,1,4,5,1],
             [3,2,1,4,5,1]
         ];
-    this.maps = [
-        null,
-        [
-            [0,0,0,0,0,0,2,2,0,0,0,0,0,0,2,2,0,0,0,0,0,0,0,0,0,0],
-            [0,0,0,0,0,0,2,2,0,0,0,0,0,0,2,2,0,0,0,0,0,0,0,0,0,0],
-            [0,0,1,1,0,0,2,2,0,0,0,0,0,0,1,1,0,0,1,1,0,0,1,1,0,0],
-            [0,0,1,1,0,0,2,2,0,0,0,0,0,0,1,1,0,0,1,1,0,0,1,1,0,0],
-            [0,0,1,1,0,0,0,0,0,0,0,0,1,1,1,1,0,0,1,1,2,2,1,1,0,0],
-            [0,0,1,1,0,0,0,0,0,0,0,0,1,1,1,1,0,0,1,1,2,2,1,1,0,0],
-            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,0,0,0,0,0,0],
-            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,0,0,0,0,0,0],
-            [3,3,0,0,0,0,0,0,0,0,0,0,2,2,0,0,0,0,1,1,3,3,1,1,2,2],
-            [3,3,0,0,0,0,0,0,0,0,0,0,2,2,0,0,0,0,1,1,3,3,1,1,2,2],
-            [3,3,3,3,0,0,0,0,0,0,1,1,0,0,0,0,2,2,0,0,3,3,0,0,0,0],
-            [3,3,3,3,0,0,0,0,0,0,1,1,0,0,0,0,2,2,0,0,3,3,0,0,0,0],
-            [0,0,1,1,1,1,1,1,3,3,3,3,3,3,2,2,0,0,0,0,3,3,1,1,0,0],
-            [0,0,1,1,1,1,1,1,3,3,3,3,3,3,2,2,0,0,0,0,3,3,1,1,0,0],
-            [0,0,0,0,0,0,2,2,3,3,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0],
-            [0,0,0,0,0,0,2,2,3,3,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0],
-            [2,2,1,1,0,0,2,2,0,0,1,1,0,0,1,1,0,0,0,0,0,0,1,1,0,0],
-            [2,2,1,1,0,0,2,2,0,0,1,1,0,0,1,1,0,0,0,0,0,0,1,1,0,0],
-            [0,0,1,1,0,0,1,1,0,0,1,1,1,1,1,1,0,0,1,1,2,2,1,1,0,0],
-            [0,0,1,1,0,0,1,1,0,0,1,1,1,1,1,1,0,0,1,1,2,2,1,1,0,0],
-            [0,0,1,1,0,0,1,1,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0],
-            [0,0,1,1,0,0,1,1,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0],
-            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,1,1,0,0],
-            [0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,1,1,0,0,1,1,0,0],
-            [0,0,1,1,0,0,1,1,0,0,0,1,9,8,1,0,0,0,1,1,1,1,1,1,0,0],
-            [0,0,1,1,0,0,1,1,0,0,0,1,8,8,1,0,0,0,1,1,1,1,1,1,0,0]
-        ]
-    ];
- }   
+    this.maps = [];
+    var cell_x = gameCfg.cell_x,
+        cell_y = gameCfg.cell_y;
+     for(var i = 0; i < TANKOL_MAP_DATA.length;i++ ){
+         this.maps[i+1] = this.parseMap(TANKOL_MAP_DATA[i],cell_x,cell_y);
+     }
+ }
+
+GameLevel.prototype.parseMap = function(str,w,h){
+    if(!str){
+        return null;
+    }
+    var i=0,j=0,rs=[];
+    for(j;j<h;j++){
+        rs[j] = str.slice(j*w,j*w+w);
+    }
+    return rs;
+}
 
 GameLevel.prototype.getCurrentMap   = function(){
-
     return this.maps[this.level];
-
 }
 
 GameLevel.prototype.getCurrentTanksBattle   = function(){
@@ -532,7 +516,7 @@ GameMap.prototype.draw = function(){
         grass : 3,
         water : 4,
         ice : 5,
-        boss : 9
+        boss : 6
     */
     //每一格为16*16
     for(var i=0;i<cell_x;i++)
@@ -632,7 +616,7 @@ GameClear.prototype.clearCanvas = function(id){
 function GameCfg(){
     this.width  = 512;
     this.height = 448;
-    this.refresh_rate = 40;
+    this.refresh_rate = 20;
     this.padding_x = 32;
     this.padding_y = 16;
     this.cell_size = 16;
@@ -693,7 +677,7 @@ GameM.prototype.drawBullets  = function(){
     for (var i = 0; i < bullets.length; i++) {
         if(bullets[i].anime && bullets[i].anime.state){
             bullets[i].anime.draw("actor");
-        }else{
+        }else if(bullets[i].live > 0){
             bullets[i].draw("actor");
         }
 
@@ -751,14 +735,14 @@ GameM.prototype.updateControl = function(){
             else if(key_down[TANKOL_KEY['k_down']]) {player1.move(TANKOL_TANK_DIRECT.down);}
             else if(key_down[TANKOL_KEY['k_left']]) {player1.move(TANKOL_TANK_DIRECT.left);}
             else if(key_down[TANKOL_KEY['k_right']]) {player1.move(TANKOL_TANK_DIRECT.right);}
-            if(key_down[TANKOL_KEY['k_space']] || key_down[TANKOL_KEY['k_enter']]) {player1.fire();}
+            if(key_down[TANKOL_KEY['k_enter']]) {player1.fire();}
         }else if(players[i].name == "player2"){
             var player2 = players[i];
             if(key_down[TANKOL_KEY['k_w']]) {player2.move(TANKOL_TANK_DIRECT.up);}
             else if(key_down[TANKOL_KEY['k_s']]) {player2.move(TANKOL_TANK_DIRECT.down);}
             else if(key_down[TANKOL_KEY['k_a']]) {player2.move(TANKOL_TANK_DIRECT.left);}
             else if(key_down[TANKOL_KEY['k_d']]) {player2.move(TANKOL_TANK_DIRECT.right);}
-            if(key_down[TANKOL_KEY['k_j']]) {player2.fire();}
+            if(key_down[TANKOL_KEY['k_k']]) {player2.fire();}
         }
     }
 }
@@ -1001,7 +985,7 @@ function Bullet(opts){
         GameObj.call(this, x, y, skin, size); 
 
     this.power = 0;
-    this.speed = 5;
+    this.speed = 6;
     this.direct = 0;
     this.fid = 0;
     this.live = 1;
@@ -1287,12 +1271,12 @@ function TankBase(opts){
     this.name = "";
     this.direct = TANKOL_TANK_DIRECT['down'];
     this.l_direct = TANKOL_TANK_DIRECT['down'];
-    this.speed = 4;
+    this.speed = 2;
     this.type = 0;
     this.fired = false;
-    this.fire_interval = 10;
+    this.fire_interval = 30;
     this.fire_time = 0;
-    this.life = 10;
+    this.life = 3;
     this.live = 1;
     this.anime = null;
 
