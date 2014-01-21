@@ -74,7 +74,9 @@ var TANKOL_STATE = {
         left : 2,
         right : 3
     },
-    TANKOL_TIMER;
+    TANKOL_TIMER,
+    TANKOL_USER_FRESH_TIMER,
+    TANKOL_WSID;
 
 //皮肤 ==================================================================================
 function GameSkin(){
@@ -100,11 +102,7 @@ function GameSkin(){
         position["aureole"] = [160,96];  //光环
         position["bullet"] = [80,96];
         position["bulletanime"] = [320,0]; //子弹动画
-
-        position["tankNum"] = [0,112];
-        position["food"] = [256,110];
-        position["score"] = [192,96];
-        position["gameOver"] = [384,64];
+        position["over"] = [384,64];
     }
 
     this.getintro_img = function(){
@@ -166,8 +164,7 @@ GameScreen.prototype.draw = function()
 
 
 //光标 ==================================================================================
-function GameCursor()
-{
+function GameCursor(){
     this.left = parseInt(gameCfg.width*0.25);    
     this._ys = [
         parseInt(gameCfg.height*0.55), 
@@ -235,9 +232,20 @@ GameCursor.prototype.next = function(n){
 function GameState(){
     this._state = TANKOL_STATE.start;
     this._game_mode = 0;
+    this._net_state = 0;
     this.gameLevel = new GameLevel(this._level);
 
     this.key_down = new Array();
+
+    this.getNetState = function(){
+        return this._net_state;
+    }
+
+    this.setNetState = function(s){
+        this._net_state = s;
+        return;
+    }
+
 
     this.getGameMode = function(){
         return this._game_mode;
@@ -312,14 +320,35 @@ GameState.prototype.gameInit = function()
         //网络模式
         case 2:
             wcInit();
-
-
         break
     }
 
+    //初始化地图
+    gameState.gameLevel.initMap();
     gameScene.init();
+    gameState.setState("loading");
+
     return;
 }
+
+
+//状态重置
+GameState.prototype.reset = function(){
+
+    TANKOL_WSID = undefined;
+    clearInterval(TANKOL_TIMER);
+    clearInterval(TANKOL_USER_FRESH_TIMER);
+    runtime();
+
+/*    gameClear.reset();
+    gameFactory.reset();
+    gameState.setNetState(0);
+    gameState.setGameMode(2);
+    gameState.setState("start");*/
+    return;
+}
+
+
 
 //游戏级别切换 ===============================================================================
  function GameLevel(){
@@ -330,12 +359,19 @@ GameState.prototype.gameInit = function()
             [3,2,1,4,5,1]
         ];
     this.maps = [];
-    var cell_x = gameCfg.cell_x,
-        cell_y = gameCfg.cell_y;
-     for(var i = 0; i < TANKOL_MAP_DATA.length;i++ ){
-         this.maps[i+1] = this.parseMap(TANKOL_MAP_DATA[i],cell_x,cell_y);
-     }
  }
+
+
+GameLevel.prototype.initMap = function(){
+    var cell_x = gameCfg.cell_x,
+        cell_y = gameCfg.cell_y,
+        game_mode = gameState.getGameMode();
+    var map = game_mode == 2?TANKOL_NETWORK_MAP:TANKOL_SINGLE_MAP;
+    for(var i = 0; i < map.length;i++ ){
+        this.maps[i+1] = this.parseMap(map[i],cell_x,cell_y);
+    }
+}
+
 
 GameLevel.prototype.parseMap = function(str,w,h){
     if(!str){
@@ -407,11 +443,10 @@ function GameScene(){
 }
 
 
-
 GameScene.prototype.init = function(){
     //通过设定move时间计算相关参数
-    var move_time = 200,              //过场总计400毫秒
-        standing_time = 100,           //停留1000毫秒
+    var move_time = 300,              //过场总计400毫秒
+        standing_time = 1200,           //停留1000毫秒
         frame_rate = gameCfg.refresh_rate,
         move_times = move_time/frame_rate,
         stand_times = standing_time/frame_rate,
@@ -422,9 +457,9 @@ GameScene.prototype.init = function(){
     this._px_per_time = parseInt(px_per_time)+1;
     this._stand_times = stand_times;
     this._move_times = move_times;
-
-    var s = gameState.setState("loading");
-    if(!s){console.error("变更状态失败!");}
+    //this.draw();
+    //var s = gameState.setState("loading");
+    //if(!s){console.error("变更状态失败!");}
 }
 
 
@@ -435,7 +470,10 @@ GameScene.prototype.draw = function(){
         move_times = this._move_times,
         temp = this._temp,
         g = this.elm.getContext("2d"),
-        img = gameSkin.getSkin();
+        img = gameSkin.getSkin(),
+        game_mode = gameState.getGameMode(),
+        game_state = gameState.getState(),
+        net_state = gameState.getNetState();
 
         g.fillStyle = this.bgcolor;
     
@@ -444,23 +482,65 @@ GameScene.prototype.draw = function(){
         g.fillRect(0, gameCfg.height - temp - px_per_time , gameCfg.width, px_per_time);
         this._temp+=px_per_time;
     }else if(time > move_times && time < (move_times)+stand_times ){
-        var x = gameSkin.getImages("level")[0];
-        var y = gameSkin.getImages("level")[1];
-        if(this.level) 
-        {   //194 208
-            g.drawImage(img, x, y, 78, 14, parseInt(0.38 * gameCfg.width), parseInt(0.46 * gameCfg.height), 78, 14);
-            gameState.gameLevel.draw("scene", parseInt(0.38 * gameCfg.width)+120, parseInt(0.46 * gameCfg.height), this.level, false);  
+        if(game_state == TANKOL_STATE.loading){
+            gameMap = new GameMap();
+            gameMap.draw();
+            var x = gameSkin.getImages("level")[0];
+            var y = gameSkin.getImages("level")[1];
+            //联网模式
+            var text;
+            if(game_mode == 2){
+                if(net_state){
+                    text = "联网大作战";
+                }else{
+                    text = "无可用连接";
+                    var g_map = gameCanvas.getElm("screen").getContext("2d");
+                        g_map.fillStyle = gameCfg.bgcolor;
+                        g_map.fillRect(0, 0, gameCfg.width, gameCfg.height);
+                }
+                g.font = "30px 楷体";
+                g.fillStyle = "#000000";
+                g.fillText(text,parseInt(0.35 * gameCfg.width), parseInt(0.5 * gameCfg.height));
+                //g.drawImage(img, x, y, 78, 14, parseInt(0.38 * gameCfg.width), parseInt(0.46 * gameCfg.height), 78, 14);
+            }else{
+                if(this.level)
+                {   //194 208
+                    g.drawImage(img, x, y, 78, 14, parseInt(0.38 * gameCfg.width), parseInt(0.46 * gameCfg.height), 78, 14);
+                    gameState.gameLevel.draw("scene", parseInt(0.38 * gameCfg.width)+120, parseInt(0.46 * gameCfg.height), this.level, false);
+                }
+            }
+        }else if(game_state == TANKOL_STATE.over){
+            var x = gameSkin.getImages("over")[0];
+            var y = gameSkin.getImages("over")[1];
+            g.drawImage(img, x, y, 68,30, parseInt(0.45 * gameCfg.width), parseInt(0.5 * gameCfg.height), 68,30);
+        }else{
+
         }
+
         this._temp = gameCfg.height/2;
     }else if( time <= (stand_times+move_times*2) ){
         g.clearRect(0, temp-px_per_time, gameCfg.width, px_per_time);
         g.clearRect(0, gameCfg.height - temp, gameCfg.width, px_per_time);
         this._temp-=px_per_time;
     }else{
-        gameSound.play("start");
-        gameState.setState("playing");
-        gameMap = new GameMap();
-        gameMap.draw();
+
+        if(game_state == TANKOL_STATE.loading){
+
+            if(game_mode == 2 && !net_state){
+                gameState.reset();
+            }else{
+                gameSound.play("start");
+                gameState.setState("playing");
+                //gameMap = new GameMap();
+                //gameMap.draw();
+            }
+
+        }else if(game_state == TANKOL_STATE.over){
+            gameState.reset();
+        }else{
+
+        }
+
         return;
     }
     this._time++;
@@ -474,6 +554,7 @@ function GameMap(){
     this.elm = gameCanvas.getElm("map");
     this._current_map_data = gameState.gameLevel.getCurrentMap();
 }
+
 
 GameMap.prototype.draw = function(){
     var elm = this.elm,
@@ -600,12 +681,21 @@ function GameClear(){
 
 }
 
+GameClear.prototype.reset = function(){
+    var scenes = gameCanvas.canvas;
+        for(var i in scenes){
+            this.clearCanvas(scenes[i]);
+        }
+    return;
+}
+
 GameClear.prototype.clearCanvas = function(id){
     var elm = gameCanvas.getElm(id);
     var g = elm.getContext("2d");
     var width  = elm.width;
     var height = elm.height;
-    g.clearRect(0,0,width,height);  
+    g.clearRect(0,0,width,height);
+    return;
 }
 
 
@@ -616,7 +706,8 @@ GameClear.prototype.clearCanvas = function(id){
 function GameCfg(){
     this.width  = 512;
     this.height = 448;
-    this.refresh_rate = 20;
+    this.refresh_rate = 40;
+    this.refresh_user_rate = 1000;
     this.padding_x = 32;
     this.padding_y = 16;
     this.cell_size = 16;
@@ -635,7 +726,7 @@ function GameCfg(){
 function GameSound(){
     this.play = function(name){
         var audio = document.getElementById(name);
-        //audio.play();
+        audio.play();
     };
 }
 
@@ -662,6 +753,7 @@ GameM.prototype.drawTanks  = function(){
 
     var tanks = gameFactory.tanks;
     for (var i = 0; i < tanks.length; i++) {
+        if(typeof tanks[i] === 'undefined') continue;
         if(tanks[i].anime && tanks[i].anime.state){
             tanks[i].anime.draw("actor"); 
         }else if(tanks[i].life > 0 ){
@@ -699,6 +791,7 @@ GameM.prototype.updateTanks = function(){
         }else if( tanks[i].life > 0 ){
             tanks[i].update(); 
         }else{
+            tanks[i].live = 0;
             tanks.splice(i,1);
         }
     };
@@ -735,7 +828,7 @@ GameM.prototype.updateControl = function(){
             else if(key_down[TANKOL_KEY['k_down']]) {player1.move(TANKOL_TANK_DIRECT.down);}
             else if(key_down[TANKOL_KEY['k_left']]) {player1.move(TANKOL_TANK_DIRECT.left);}
             else if(key_down[TANKOL_KEY['k_right']]) {player1.move(TANKOL_TANK_DIRECT.right);}
-            if(key_down[TANKOL_KEY['k_enter']]) {player1.fire();}
+            if(key_down[TANKOL_KEY['k_a']]) {player1.fire();}
         }else if(players[i].name == "player2"){
             var player2 = players[i];
             if(key_down[TANKOL_KEY['k_w']]) {player2.move(TANKOL_TANK_DIRECT.up);}
@@ -765,7 +858,19 @@ GameM.prototype.updateWs = function(){
             }
         }
         wsSend({code:20,wsid:WSID,keys:keys}); //更新*/
-        wsSend({code:10,wsid:WSID}); //获取
+        var players  = gameFactory.players;
+        if(players.length > 0 ){
+            if(players[0].live <= 0 ){
+                wsSend({code:5});
+                gameScene.init();
+                gameState.setState("over");
+                return;
+            }
+            var myTank = players[0];
+            var xy = myTank.x+"|"+myTank.y+"|"+myTank.direct;
+            wsSend({code:11,xy:xy}); //获取
+        }
+
     }else{
         return;
     }
@@ -776,35 +881,51 @@ GameM.prototype.updateWs = function(){
 
 //工厂类 ==================================================================================
 function GameFactory(){
-    this.players    = new Array();
-    this.tanks      = new Array();
-    this.bullets     = new Array();
-    this.tank_battle =  new Array();
+    this.players      = new Array();
+    this.tanks        = new Array();
+    this.remote_tanks = new Array();
+    this.bullets      = new Array();
+    this.tank_battle  =  new Array();
 }
 
 
+GameFactory.prototype.reset = function(){
+    this.players      = new Array();
+    this.tanks        = new Array();
+    this.remote_tanks = new Array();
+    this.bullets      = new Array();
+    this.tank_battle  =  new Array();
+}
 
 //tank 专用工厂
 GameFactory.prototype.createTank    =  function(opts){
     var type = opts['type'],
         tank,
-        tankAnime;
+        tankAnime,
+        game_mode = gameState.getGameMode();
     if(type === TANKOL_TANK_TYPE['player'] ){
         tank = new PlayerTank(opts);
         this.players.push(tank);
     }else if(type === TANKOL_TANK_TYPE['computer']){
         tank = new ComputerTank(opts);
         tank.anime = new TankAnime_1(opts.x,opts.y,"anime_1",32);
-        //this.tankAnimes.push(tankAnime);
     }else if(type === TANKOL_TANK_TYPE['remote']){
-
+        tank = new RemoteTank(opts);
+        tank.anime = new TankAnime_1(opts.x,opts.y,"anime_1",32);
     }else{
         return;
     }
+
     //实例化成功就将其放入队列
     if(tank){
-         this.tanks.push(tank);   
+        this.tanks.push(tank);
     }
+
+    if(game_mode == 2){
+        var remote_tanks = gameFactory.remote_tanks;
+        this.remote_tanks[opts.id] = tank;
+    }
+
 }
 
 //bullet 专用工厂
@@ -985,7 +1106,7 @@ function Bullet(opts){
         GameObj.call(this, x, y, skin, size); 
 
     this.power = 0;
-    this.speed = 6;
+    this.speed = 10;
     this.direct = 0;
     this.fid = 0;
     this.live = 1;
@@ -1271,12 +1392,12 @@ function TankBase(opts){
     this.name = "";
     this.direct = TANKOL_TANK_DIRECT['down'];
     this.l_direct = TANKOL_TANK_DIRECT['down'];
-    this.speed = 2;
+    this.speed = 6;
     this.type = 0;
     this.fired = false;
     this.fire_interval = 30;
     this.fire_time = 0;
-    this.life = 3;
+    this.life = 1;
     this.live = 1;
     this.anime = null;
 
@@ -1289,6 +1410,14 @@ function TankBase(opts){
 }
 
 TankBase.prototype = new GameObj();
+
+TankBase.prototype.setPosition = function(x,y,d){
+    this.x = x;
+    this.y = y;
+    this.direct = d;
+    return;
+};
+
 
 TankBase.prototype.draw = function(id){
     var elm = gameCanvas.getElm(id),
@@ -1610,7 +1739,31 @@ function PlayerTank(opts){
 
 PlayerTank.prototype = new TankBase();
 
+//RemoteTank 子类 ==================================================================================
 
+function RemoteTank(opts){
+
+    var model = opts['model'];
+    if(model == 1){
+        opts['skin'] = "player1";
+    }else{
+        opts['skin'] = "player2";
+    }
+    opts['size'] = 30;
+
+    TankBase.call(this,opts);
+    this.direct   = TANKOL_TANK_DIRECT['up'];
+    this.l_direct = TANKOL_TANK_DIRECT['up'];
+    //参数合并
+    if(opts){
+        for(var i in opts){
+            if(this.hasOwnProperty(i)) this[i] = opts[i];
+        }
+    }
+
+}
+
+RemoteTank.prototype = new TankBase();
 
 //Computertank 子类 ==================================================================================
 
@@ -1663,7 +1816,7 @@ function refresh(){
         break;
         
         case TANKOL_STATE.over:
-
+            gameScene.draw();
         break;
         
         case TANKOL_STATE.select:
@@ -1676,9 +1829,16 @@ function refresh(){
     }
 }
 
+//远程用户刷新
+function refresh_user(){
+    var json = {code:2};
+    wsSend(json);
+    return;
+}
+
 //运行时
 function runtime(){
-    gameFactory = new GameFactory();
+    gameFactory= new GameFactory();
     gameM      = new GameM();
     gameSound  = new GameSound();
     gameCfg    = new GameCfg();
@@ -1712,32 +1872,52 @@ function wcInit(){
 }
 
 
+function wcClose(){
+    var net_state = gameState.getNetState();
+    if(typeof websocket != 'undefined' && net_state){
+        gameState.setNetState(0);
+        websocket.close();
+    }
+    return;
+}
+
 //ws 交互代码
 /*
 
-清除用户列表： 555
-获取用户列表： 100
-更新用户列表： 101
+用户指令
+用户注册：1
+用户列表更新：2
+用户注销： 3
+清空用户：4
+剔除指定用户：5
 
-发送按下键:12
-发送松开键:21
+同步指令：
+同步位置信息：11
+
+操作指令：
+开火: 21
+
 
  */
 
 function wsClearAll(){
-    wsSend({code:555});
+    wsSend({code:4});
 }
 
 
 function wsSend(data){
-    var str = jsonToString(data);
-    websocket.send(str);
+    var net_state = gameState.getNetState();
+    if(net_state){
+        var str = jsonToString(data);
+        websocket.send(str);
+    }
     return;
 }
 
 
 function wsOpen(evt) {
-    var json = {code:100};
+    gameState.setNetState(1);
+    var json = {code:1};
     wsSend(json);
     console.log("服务器连接成功！");
     return;
@@ -1746,6 +1926,13 @@ function wsOpen(evt) {
 
 
 function wsClose(evt) {
+    clearInterval(TANKOL_USER_FRESH_TIMER);
+    gameState.setNetState(0);
+    var game_state = gameState.getState();
+    if(game_state == TANKOL_STATE.playing){
+         gameScene.init();
+         gameState.setState("loading");
+    }
     console.log("链接中断！");
     return;
 }
@@ -1762,68 +1949,95 @@ function wsMessage(evt){
         return;
     }else{
         switch( data['code'] ){
-            case 100 :
+            case 1 :
             {
-                var users = data['data'];
-                var opts = {};
-
-                if(users.length == 0){
-                    window.WSID = 1;
-
-                }else if(users.length == 1){
-                    window.WSID = 2;
-                }else{
-                    cosnole.info("房间已满！");
-                    return;
-                }
-
-                opts = {
-                    x    : 129,
-                    y    : 385,
-                    name : "player1",
-                    type : TANKOL_TANK_TYPE['player'],
-                    model:'1'
-                };
+                TANKOL_WSID = parseInt(data['wsid']);
+                var opts = {
+                        id   : TANKOL_WSID,
+                        x    : TANKOL_WSID,
+                        y    : TANKOL_WSID,
+                        name : "player1",
+                        type : TANKOL_TANK_TYPE['player'],
+                        model:'1'
+                     };
                 gameFactory.createTank(opts);
-
-                opts = {
-                    x    : 256,
-                    y    : 385,
-                    name : "player2",
-                    type : TANKOL_TANK_TYPE['player'],
-                    model:'2'
-                };
-                gameFactory.createTank(opts);
-
-
-                wsSend({code:101,user:"player"+WSID });
+                //wsSend({code:101,user:"player"+WSID });
+                //TANKOL_USER_FRESH_TIMER = setInterval(refresh_user,gameCfg.refresh_user_rate);
             }
             break;
-            case 10 :
+            case 2 :
             {
-                var keys = data['keys'];
-                var player = "player";
-                key_down  = gameState.key_down;
-                console.info(keys);
-                if(WSID == 1){
-                    player = player + "2";
-                }else{
-                    player = player + "1";
-                }
-                if(!keys){
-                    return;
-                }else{
-                    for(var i in keys ){
-                        key_down[i] = keys[i];
+                var remote_tanks = gameFactory.remote_tanks;
+                var users = data['list'];
+                //console.info(users);
+                if(users.length>1){
+                    for(var i in users){
+                        var wsid = parseInt(users[i]);
+                        console.info("两个值分别是",wsid,TANKOL_WSID);
+                        if( wsid  ==  TANKOL_WSID || remote_tanks.hasOwnProperty(users[i]) ) continue;
+                        var opts = {
+                            id   : wsid,
+                            x    : TANKOL_WSID,
+                            y    : TANKOL_WSID,
+                            name : "player2",
+                            type : TANKOL_TANK_TYPE['remote'],
+                            model: '2'
+                        };
+                        gameFactory.createTank(opts);
                     }
                 }
 
+/*                if(remote_tanks){
+                    for(var i in remote_tanks){
+                        if( users.hasOwnProperty(i) ){
+                            users.splice(i,1);
+                        }
+
+                    }
+                }*/
 
 
 
             }
-                break;
+            break;
+            case 11 :
+            {
+                var xy = data['xy'],
+                    key = data['key'],
+                    remote_tanks = gameFactory.remote_tanks,
+                    x,
+                    y,
+                    d;
 
+                if(xy){
+
+                    for(var i in xy){
+                        var j = parseInt(i);
+                        if(j == TANKOL_WSID || typeof remote_tanks[j] == 'undefined') continue;
+                        x = parseInt(xy[i].split("|")[0]);
+                        y = parseInt(xy[i].split("|")[1]);
+                        d = parseInt(xy[i].split("|")[2]);
+                        remote_tanks[j].setPosition(x,y,d);
+                    }
+
+                    //console.info(tanks[i]);
+                }
+
+                if(key){
+
+                    for(var i in key){
+                        var j = parseInt(i);
+                        var k = parseInt(key[i]);
+                        if(j == TANKOL_WSID ) continue;
+                        if(k == 21){
+                            remote_tanks[j].fire();
+                        }
+                    }
+                    //console.info(tanks[i]);
+                }
+
+            }
+            break;
 
         }
 
@@ -1866,8 +2080,8 @@ document.onkeydown = function(e){
 
 
         //网络 发送
-        if(game_mode == 2 && key_down[key_code] !== true ){
-            wsSend({code:12,wsid:WSID,key:key_code});
+        if(game_mode == 2 && key_code == TANKOL_KEY['k_a'] && key_down[key_code] !== true ){
+            wsSend({code:20,key:21});
         }
 
         key_down[key_code] = true;
@@ -1914,9 +2128,12 @@ document.onkeyup = function(e){
     var key_down  = gameState.key_down;
     var key_code = e.keyCode;
     var game_mode = gameState.getGameMode();
-    if(game_mode == 2 && key_down[key_code] !== false){
-        wsSend({code:21,wsid:WSID,key:key_code});
+
+    //网络 发送停止开火
+    if(game_mode == 2 && key_code == TANKOL_KEY['k_a'] && key_down[key_code] !== false ){
+        wsSend({code:20,key:22});
     }
+
     key_down[key_code] = false;
     return;
 }

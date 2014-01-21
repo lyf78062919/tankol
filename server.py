@@ -1,88 +1,129 @@
 #encoding:utf-8
-import sys,socket,threading,struct,base64,hashlib,json
+import sys,socket,threading,struct,base64,hashlib,json,random
 
-#清除用户列表： 555
-#获取用户列表： 100
-#更新用户列表： 101
+#用户指令
+#用户注册：1
+#用户列表更新：2
+#用户注销： 3
+#清空用户：4
+#剔除指定用户：5
 
-#获取按键组:10
-#更新按键组:20
-#发送按下键:12
-#发送松开键:21
+#同步指令：
+#同步位置信息：11
+
+#操作指令：20
+#开火: 21
 
 game_user = []
-keys_up_1 = []
-keys_up_2 = []
-keys_down_1 = []
-keys_down_2 = []
-keys_1= {};
-keys_2= {};
+user_code = {} #用户指令
+user_xy =   {} #用户位置
 
+def getWsid():
+    x = random.randint(1,100)
+    if(x not in game_user):
+        return x
+    else:
+        return getWsid()
 
 #这算是客户端一个循环接受数据并且处理数据的线程
 def DoRemoteCommand(connection):
+    global game_user,user_code,user_xy
+    wsid = getWsid()
+    user_num = len(game_user)
     try:
         while 1:
+            if(user_num != len(game_user)):
+                rs = {"code":2,"list":game_user}
+                SendData(rs,connection)
+                user_num = len(game_user)
+
+
             szBuf = RecvData(8196,connection)
-            if(szBuf == False):
+            if(szBuf == False or szBuf == ""):
                 break
             else:
-                global game_user,keys_up_1,keys_up_2,keys_down_1,keys_down_2,keys_1,keys_2
-                encodedjson = json.loads(szBuf)
-                if( encodedjson['code'] == 10 ):
-                    if(encodedjson['wsid'] == 1):
-                        rs = {"code":10}
-                        rs['keys'] = keys_2;
-                        keys_2 = {};
-                    elif(encodedjson['wsid'] == 2):
-                        rs = {"code":10}
-                        rs['keys'] = keys_1;
-                        keys_1 = {};
-                    else:pass    
+                print game_user
+                try:
+                    encodedjson = json.loads(szBuf)
+                except:
+                    pass
+
+                # if( encodedjson['code'] == 10 ):
+                #     if(encodedjson['wsid'] == 1):
+                #         rs = {"code":10}
+                #         rs['keys'] = keys_2;
+                #         keys_2 = {};
+                #     elif(encodedjson['wsid'] == 2):
+                #         rs = {"code":10}
+                #         rs['keys'] = keys_1;
+                #         keys_1 = {};
+                #     else:pass
+                #     SendData(rs,connection)
+                #
+                # elif( encodedjson['code'] == 20 ):
+                #     if(encodedjson['wsid'] == 1):
+                #         keys_1 =  encodedjson['keys']
+                #     elif(encodedjson['wsid'] == 2):
+                #         keys_2 =  encodedjson['keys']
+                #     else:pass
+                #
+                # elif( encodedjson['code'] == 12 ):
+                #     if(encodedjson['wsid'] == 1):
+                #         if(keys_1.has_key(encodedjson['key'])):
+                #             keys_1[str(encodedjson['key'])] = 1;
+                #         else:
+                #             keys_1[str(encodedjson['key'])] = 1;
+                #     elif(encodedjson['wsid'] == 2):
+                #         if(keys_2.has_key(encodedjson['key'])):
+                #             keys_2[str(encodedjson['key'])] = 1;
+                #         else:
+                #             keys_2[str(encodedjson['key'])] = 1;
+                #     else:pass
+                #
+                # elif( encodedjson['code'] == 21 ):
+                #     if(encodedjson['wsid'] == 1):
+                #         if(keys_1.has_key(encodedjson['key'])):
+                #             keys_1[str(encodedjson['key'])] = 0;
+                #         else:
+                #             keys_1[str(encodedjson['key'])] = 0;
+                #     elif(encodedjson['wsid'] == 2):
+                #         if(keys_2.has_key(encodedjson['key'])):
+                #             keys_2[str(encodedjson['key'])] = 0;
+                #         else:
+                #             keys_2[str(encodedjson['key'])] = 0;
+                #     else:pass
+
+                #同步位置信息
+                if( encodedjson['code'] == 11 ):
+                    user_xy[str(wsid)] = str(encodedjson['xy'])
+                    rs = {"code":11,"xy":user_xy,"key":user_code}
                     SendData(rs,connection)
+                #开火
                 elif( encodedjson['code'] == 20 ):
-                    if(encodedjson['wsid'] == 1):
-                        keys_1 =  encodedjson['keys']
-                    elif(encodedjson['wsid'] == 2):
-                        keys_2 =  encodedjson['keys']
-                    else:pass
-                elif( encodedjson['code'] == 12 ):
-                    if(encodedjson['wsid'] == 1):
-                        if(keys_1.has_key(encodedjson['key'])):
-                            keys_1[str(encodedjson['key'])] = 1;
-                        else:
-                            keys_1[str(encodedjson['key'])] = 1;
-                    elif(encodedjson['wsid'] == 2):
-                        if(keys_2.has_key(encodedjson['key'])):
-                            keys_2[str(encodedjson['key'])] = 1;
-                        else:
-                            keys_2[str(encodedjson['key'])] = 1;
-                    else:pass  
-                elif( encodedjson['code'] == 21 ):
-                    if(encodedjson['wsid'] == 1):
-                        if(keys_1.has_key(encodedjson['key'])):
-                            keys_1[str(encodedjson['key'])] = 0;
-                        else:
-                            keys_1[str(encodedjson['key'])] = 0;
-                    elif(encodedjson['wsid'] == 2):
-                        if(keys_2.has_key(encodedjson['key'])):
-                            keys_2[str(encodedjson['key'])] = 0;
-                        else:
-                            keys_2[str(encodedjson['key'])] = 0;
-                    else:pass
-                elif( encodedjson['code'] == 100 ):
-                    rs = {"code":100,"data":game_user}
+                    key = str(encodedjson['key'])
+                    if(key == "21"):
+                        user_code[str(wsid)] = str(encodedjson['key'])
+                    elif(key == "22"):
+                        user_code.pop(str(wsid))
+                #用户注册
+                elif( encodedjson['code'] == 1 ):
+                    game_user.append(wsid)
+                    rs = {"code":1,"wsid":wsid}
                     SendData(rs,connection)
-                elif( encodedjson['code'] == 101 ):
-                    game_user.append( str(encodedjson['user']) )
-                    rs = {"code":101,"data":game_user}
+                #请求用户列表
+                elif( encodedjson['code'] == 2 ):
+                    rs = {"code":2,"list":game_user}
                     SendData(rs,connection)
-                elif( encodedjson['code'] == 555 ):
+                #清除用户
+                elif( encodedjson['code'] == 4 ):
                     game_user = [];
+                #删除指定用户
+                elif( encodedjson['code'] == 5 ):
+                    if(wsid in game_user):game_user.remove(wsid)
 
-
-
+        if(wsid in game_user): game_user.remove(wsid)
     except KeyboardInterrupt:
+        if(wsid in game_user): game_user.remove(wsid)
         sys.exit(0)
 
 
